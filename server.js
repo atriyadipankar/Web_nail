@@ -23,8 +23,8 @@ const webhookRoutes = require('./routes/webhook');
 
 const app = express();
 
-// Connect to database
-connectDB();
+// Connect to database (disabled for now)
+// connectDB();
 
 // Trust proxy for production
 if (config.nodeEnv === 'production') {
@@ -117,36 +117,21 @@ app.get('/contact', (req, res) => {
   res.render('contact', { title: 'Contact Us' });
 });
 
-// Home route
-app.get('/', async (req, res) => {
+// Home route - Working version without database
+app.get('/', (req, res) => {
   try {
-    const Product = require('./models/Product');
-    
-    // Get featured products
-    const featuredProducts = await Product.find({ 
-      featured: true, 
-      active: true 
-    }).limit(8);
-    
-    // Get latest products if no featured products
-    let products = featuredProducts;
-    if (products.length === 0) {
-      products = await Product.find({ active: true })
-        .sort({ createdAt: -1 })
-        .limit(8);
-    }
-
+    // Static homepage without database calls
     res.render('home', { 
       title: 'Premium Press-On Nails',
-      products,
+      products: [], // Empty array - no database needed
       layout: 'layouts/main'
     });
   } catch (error) {
     console.error('Home page error:', error);
-    res.status(500).render('error', {
-      title: 'Server Error',
-      message: 'Something went wrong',
-      error: { status: 500 }
+    res.status(500).json({ 
+      error: 'Home page error',
+      message: error.message,
+      stack: error.stack 
     });
   }
 });
