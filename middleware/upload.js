@@ -4,8 +4,14 @@ const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 
-// Ensure upload directories exist
+// Ensure upload directories exist (skip on Vercel)
 const ensureUploadDirs = async () => {
+  // Skip directory creation on Vercel (serverless environment)
+  if (process.env.VERCEL) {
+    console.log('Skipping directory creation on Vercel');
+    return;
+  }
+  
   const dirs = [
     'public/uploads',
     'public/uploads/products',
