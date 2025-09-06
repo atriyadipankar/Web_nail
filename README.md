@@ -33,7 +33,7 @@ A complete e-commerce website for selling press-on colored and designed nails, b
 
 - Node.js (v16 or higher)
 - MongoDB (local installation or MongoDB Atlas)
-- Stripe account for payment processing
+- Razorpay account for payment processing
 
 ## 🛠️ Installation
 
@@ -61,10 +61,10 @@ A complete e-commerce website for selling press-on colored and designed nails, b
    PORT=3000
    NODE_ENV=development
 
-   # Stripe (Get these from your Stripe dashboard)
-   STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
-   STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-   STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+   # Razorpay (Get these from your Razorpay dashboard)
+   RAZORPAY_KEY_ID=rzp_test_your_key_id_here
+   RAZORPAY_KEY_SECRET=your_key_secret_here
+   RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_here
 
    # App Settings
    SESSION_SECRET=your-session-secret-change-in-production
@@ -72,13 +72,24 @@ A complete e-commerce website for selling press-on colored and designed nails, b
    ADMIN_PASSWORD=admin123
    ```
 
-4. **Database Setup**
+4. **Razorpay Setup**
+   - Create a free account at [razorpay.com](https://razorpay.com)
+   - Go to Dashboard → Settings → API Keys
+   - Copy your Test Key ID and Secret
+   - Update the `.env` file with your keys:
+     ```env
+     RAZORPAY_KEY_ID=rzp_test_your_actual_key_id
+     RAZORPAY_KEY_SECRET=your_actual_key_secret
+     ```
+   - For webhooks, add your webhook secret (optional for development)
+
+5. **Database Setup**
    Make sure MongoDB is running, then seed the database:
    ```bash
    npm run seed
    ```
 
-5. **Start the server**
+6. **Start the server**
    ```bash
    # Development mode (with nodemon)
    npm run dev
@@ -87,7 +98,7 @@ A complete e-commerce website for selling press-on colored and designed nails, b
    npm start
    ```
 
-6. **Access the application**
+7. **Access the application**
    - Website: http://localhost:3000
    - Admin Panel: http://localhost:3000/admin
 
@@ -184,10 +195,11 @@ The application uses Bootstrap 5 with custom CSS variables for easy theming. Mai
 Available categories are defined in the Product model. To add new categories, update the enum in `models/Product.js`.
 
 ### Payment Configuration
-Stripe settings can be configured in the `.env` file. For production, make sure to:
-1. Use live Stripe keys
-2. Set up webhook endpoints
+Razorpay settings can be configured in the `.env` file. For production, make sure to:
+1. Use live Razorpay keys (replace `rzp_test_` with `rzp_live_`)
+2. Set up webhook endpoints at `/webhook/razorpay`
 3. Configure proper CORS settings
+4. Activate your Razorpay account for live transactions
 
 ## 🚀 Deployment
 
@@ -196,14 +208,14 @@ Stripe settings can be configured in the `.env` file. For production, make sure 
 NODE_ENV=production
 MONGODB_URI=your-production-mongodb-uri
 JWT_SECRET=your-production-jwt-secret
-STRIPE_PUBLISHABLE_KEY=pk_live_your_live_publishable_key
-STRIPE_SECRET_KEY=sk_live_your_live_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_live_webhook_secret
+RAZORPAY_KEY_ID=rzp_live_your_live_key_id
+RAZORPAY_KEY_SECRET=your_live_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_live_webhook_secret
 ```
 
 ### Deployment Steps
 1. Set up MongoDB (MongoDB Atlas recommended)
-2. Configure Stripe webhooks for your domain
+2. Configure Razorpay webhooks for your domain at `/webhook/razorpay`
 3. Set all environment variables
 4. Deploy to your hosting platform (Heroku, DigitalOcean, etc.)
 5. Run the seed script on production (optional)
@@ -255,10 +267,11 @@ mongo nail-ecommerce
    - Ensure MongoDB is running
    - Check the MONGODB_URI in .env
 
-2. **Stripe Payment Issues**
-   - Verify Stripe keys are correct
-   - Check webhook configuration
+2. **Razorpay Payment Issues**
+   - Verify Razorpay keys are correct
+   - Check webhook configuration at `/webhook/razorpay`
    - Ensure webhook secret matches
+   - Verify account is activated for live payments
 
 3. **Image Upload Problems**
    - Check file permissions on uploads directory

@@ -4,10 +4,10 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
   sessionSecret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
   nodeEnv: process.env.NODE_ENV || 'development',
-  stripe: {
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    secretKey: process.env.STRIPE_SECRET_KEY,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET
+  razorpay: {
+    keyId: process.env.RAZORPAY_KEY_ID,
+    keySecret: process.env.RAZORPAY_KEY_SECRET,
+    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET
   },
   admin: {
     email: process.env.ADMIN_EMAIL || 'admin@nailstore.com',

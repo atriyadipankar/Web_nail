@@ -37,10 +37,10 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://api.stripe.com"],
-      frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
+      connectSrc: ["'self'", "https://api.razorpay.com"],
+      frameSrc: ["https://checkout.razorpay.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: config.nodeEnv === 'production' ? [] : null,
     },
@@ -85,7 +85,7 @@ app.use(optionalAuth);
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
   res.locals.query = req.query;
-  res.locals.stripePublishableKey = config.stripe.publishableKey;
+  res.locals.razorpayKeyId = config.razorpay.keyId;
   next();
 });
 
@@ -95,6 +95,27 @@ app.use('/products', productRoutes);
 app.use('/cart', cartRoutes);
 app.use('/orders', orderRoutes);
 app.use('/admin', adminRoutes);
+
+// Policy and legal pages
+app.get('/privacy-policy', (req, res) => {
+  res.render('policies/privacy', { title: 'Privacy Policy' });
+});
+
+app.get('/terms', (req, res) => {
+  res.render('policies/terms', { title: 'Terms and Conditions' });
+});
+
+app.get('/shipping-policy', (req, res) => {
+  res.render('policies/shipping', { title: 'Shipping Policy' });
+});
+
+app.get('/refund-policy', (req, res) => {
+  res.render('policies/refund', { title: 'Refund Policy' });
+});
+
+app.get('/contact', (req, res) => {
+  res.render('contact', { title: 'Contact Us' });
+});
 
 // Home route
 app.get('/', async (req, res) => {

@@ -4,7 +4,11 @@ const Product = require('../models/Product');
 const Order = require('../models/Order');
 const { requireAuth } = require('../middleware/auth');
 const config = require('../config/config');
-const stripe = require('stripe')(config.stripe.secretKey);
+const Razorpay = require('razorpay');
+const razorpay = new Razorpay({
+  key_id: config.razorpay.keyId,
+  key_secret: config.razorpay.keySecret
+});
 
 const router = express.Router();
 
@@ -159,8 +163,8 @@ router.get('/checkout', requireAuth, (req, res) => {
   });
 });
 
-// Create Stripe checkout session
-router.post('/create-checkout-session', requireAuth, [
+// Create Razorpay order
+router.post('/create-razorpay-order', requireAuth, [
   body('items').isArray({ min: 1 }).withMessage('Cart cannot be empty'),
   body('shippingInfo.name').trim().notEmpty().withMessage('Name is required'),
   body('shippingInfo.phone').trim().notEmpty().withMessage('Phone is required'),
@@ -209,79 +213,113 @@ router.post('/create-checkout-session', requireAuth, [
       paymentInfo: {
         status: 'pending',
         amount: validatedCart.total,
-        stripeSessionId: '' // Will be updated after session creation
+        razorpayOrderId: '' // Will be updated after order creation
       }
     });
 
     await order.save();
 
-    // Create Stripe line items
-    const lineItems = validatedCart.items.map(item => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: `${item.title} (${item.variant.size}, ${item.variant.design})`,
-          images: item.image ? [`${req.protocol}://${req.get('host')}${item.image}`] : []
-        },
-        unit_amount: Math.round(item.price * 100)
-      },
-      quantity: item.quantity
-    }));
-
-    // Add tax and shipping as line items
-    if (validatedCart.tax > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Tax'
-          },
-          unit_amount: Math.round(validatedCart.tax * 100)
-        },
-        quantity: 1
-      });
-    }
-
-    if (validatedCart.shipping > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Shipping'
-          },
-          unit_amount: Math.round(validatedCart.shipping * 100)
-        },
-        quantity: 1
-      });
-    }
-
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      mode: 'payment',
-      success_url: `${req.protocol}://${req.get('host')}/orders/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.protocol}://${req.get('host')}/cart/checkout`,
-      metadata: {
+    // Create Razorpay order
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(validatedCart.total * 100), // Amount in paise (smallest currency unit)
+      currency: 'INR',
+      receipt: `order_${order._id}`,
+      notes: {
         orderId: order._id.toString(),
-        userId: req.user._id.toString()
-      },
-      customer_email: req.user.email,
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA']
+        userId: req.user._id.toString(),
+        userEmail: req.user.email
       }
     });
 
-    // Update order with session ID
-    order.paymentInfo.stripeSessionId = session.id;
+    // Update order with Razorpay order ID
+    order.paymentInfo.razorpayOrderId = razorpayOrder.id;
     await order.save();
 
     res.json({
-      sessionId: session.id,
-      orderId: order._id
+      razorpayOrderId: razorpayOrder.id,
+      orderId: order._id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: config.razorpay.keyId,
+      customerInfo: {
+        name: req.user.name,
+        email: req.user.email,
+        contact: req.user.phone || shippingInfo.phone
+      },
+      shippingInfo: shippingInfo
     });
   } catch (error) {
     console.error('Checkout session creation error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify Razorpay payment
+router.post('/verify-payment', requireAuth, [
+  body('razorpay_payment_id').notEmpty().withMessage('Payment ID is required'),
+  body('razorpay_order_id').notEmpty().withMessage('Order ID is required'),
+  body('razorpay_signature').notEmpty().withMessage('Signature is required'),
+  body('orderId').isMongoId().withMessage('Invalid order ID')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, orderId } = req.body;
+
+    // Verify signature
+    const crypto = require('crypto');
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', config.razorpay.keySecret)
+      .update(body.toString())
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed' });
+    }
+
+    // Update order status
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    order.paymentInfo.status = 'completed';
+    order.paymentInfo.razorpayPaymentId = razorpay_payment_id;
+    order.status = 'confirmed';
+    await order.save();
+
+    // Update product stock
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        const variant = product.variants.find(v => 
+          v.size === item.variant.size && v.design === item.variant.design
+        );
+        if (variant) {
+          variant.stock -= item.quantity;
+          await product.save();
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment verified successfully',
+      orderId: order._id
+    });
+  } catch (error) {
+    console.error('Payment verification error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

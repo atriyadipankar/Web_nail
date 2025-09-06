@@ -1,62 +1,72 @@
 const express = require('express');
-const stripe = require('stripe')(require('../config/config').stripe.secretKey);
+const crypto = require('crypto');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const config = require('../config/config');
 
 const router = express.Router();
 
-// Stripe webhook endpoint
-router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
+// Razorpay webhook endpoint
+router.post('/razorpay', express.raw({ type: 'application/json' }), async (req, res) => {
+  const webhookSignature = req.headers['x-razorpay-signature'];
+  
+  // Verify webhook signature
+  const body = req.body.toString();
+  const expectedSignature = crypto
+    .createHmac('sha256', config.razorpay.webhookSecret)
+    .update(body)
+    .digest('hex');
 
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, config.stripe.webhookSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  if (webhookSignature !== expectedSignature) {
+    console.error('Razorpay webhook signature verification failed');
+    return res.status(400).send('Webhook signature verification failed');
   }
 
   try {
-    switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object);
+    const event = JSON.parse(body);
+    
+    switch (event.event) {
+      case 'payment.captured':
+        await handlePaymentCaptured(event.payload.payment.entity);
         break;
       
-      case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object);
+      case 'payment.failed':
+        await handlePaymentFailed(event.payload.payment.entity);
         break;
       
-      case 'payment_intent.payment_failed':
-        await handlePaymentIntentFailed(event.data.object);
+      case 'order.paid':
+        await handleOrderPaid(event.payload.order.entity);
         break;
       
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`Unhandled Razorpay event type: ${event.event}`);
     }
 
-    res.json({ received: true });
+    res.json({ status: 'ok' });
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('Razorpay webhook processing error:', error);
     res.status(500).json({ error: 'Webhook processing failed' });
   }
 });
 
-// Handle successful checkout session
-async function handleCheckoutSessionCompleted(session) {
+// Handle successful payment capture
+async function handlePaymentCaptured(payment) {
   try {
-    const orderId = session.metadata.orderId;
-    const order = await Order.findById(orderId);
+    const orderId = payment.notes?.orderId;
+    if (!orderId) {
+      console.error('Order ID not found in payment notes:', payment.id);
+      return;
+    }
 
+    const order = await Order.findById(orderId);
     if (!order) {
-      console.error('Order not found for session:', session.id);
+      console.error('Order not found for payment:', payment.id);
       return;
     }
 
     // Update order status
     order.paymentInfo.status = 'paid';
-    order.paymentInfo.stripePaymentIntentId = session.payment_intent;
+    order.paymentInfo.razorpayPaymentId = payment.id;
     order.paymentInfo.paidAt = new Date();
     order.status = 'confirmed';
 
@@ -79,48 +89,55 @@ async function handleCheckoutSessionCompleted(session) {
 
     console.log(`Order ${order.orderNumber} confirmed and stock updated`);
   } catch (error) {
-    console.error('Error handling checkout session completed:', error);
+    console.error('Error handling payment captured:', error);
   }
 }
 
-// Handle successful payment intent
-async function handlePaymentIntentSucceeded(paymentIntent) {
+// Handle failed payment
+async function handlePaymentFailed(payment) {
   try {
-    const order = await Order.findOne({
-      'paymentInfo.stripePaymentIntentId': paymentIntent.id
-    });
-
-    if (order) {
-      order.paymentInfo.status = 'paid';
-      order.paymentInfo.paidAt = new Date();
-      
-      if (order.status === 'pending') {
-        order.status = 'confirmed';
-      }
-
-      await order.save();
-      console.log(`Payment confirmed for order ${order.orderNumber}`);
+    const orderId = payment.notes?.orderId;
+    if (!orderId) {
+      console.error('Order ID not found in payment notes:', payment.id);
+      return;
     }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      console.error('Order not found for payment:', payment.id);
+      return;
+    }
+
+    order.paymentInfo.status = 'failed';
+    order.status = 'cancelled';
+    await order.save();
+    
+    console.log(`Payment failed for order ${order.orderNumber}`);
   } catch (error) {
-    console.error('Error handling payment intent succeeded:', error);
+    console.error('Error handling payment failed:', error);
   }
 }
 
-// Handle failed payment intent
-async function handlePaymentIntentFailed(paymentIntent) {
+// Handle order paid event
+async function handleOrderPaid(razorpayOrder) {
   try {
     const order = await Order.findOne({
-      'paymentInfo.stripePaymentIntentId': paymentIntent.id
+      'paymentInfo.razorpayOrderId': razorpayOrder.id
     });
 
-    if (order) {
-      order.paymentInfo.status = 'failed';
-      order.status = 'cancelled';
-      await order.save();
-      console.log(`Payment failed for order ${order.orderNumber}`);
+    if (!order) {
+      console.error('Order not found for Razorpay order:', razorpayOrder.id);
+      return;
     }
+
+    order.paymentInfo.status = 'paid';
+    order.paymentInfo.paidAt = new Date();
+    order.status = 'confirmed';
+
+    await order.save();
+    console.log(`Order ${order.orderNumber} marked as paid`);
   } catch (error) {
-    console.error('Error handling payment intent failed:', error);
+    console.error('Error handling order paid:', error);
   }
 }
 

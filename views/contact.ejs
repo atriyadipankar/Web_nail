@@ -1,0 +1,212 @@
+<%- contentFor('title', 'Contact Us') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4 text-center">Contact Us</h1>
+            <p class="text-center text-muted mb-5">We'd love to hear from you! Get in touch with us for any questions or support.</p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-envelope text-primary"></i> Email Support</h3>
+                            <p>For general inquiries and support:</p>
+                            <p><strong>support@nailstudio.com</strong></p>
+                            
+                            <p>For order-related queries:</p>
+                            <p><strong>orders@nailstudio.com</strong></p>
+                            
+                            <p>For business partnerships:</p>
+                            <p><strong>business@nailstudio.com</strong></p>
+                            
+                            <p class="text-muted">Response time: Within 24 hours</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-telephone text-primary"></i> Phone Support</h3>
+                            <p><strong>Customer Service:</strong></p>
+                            <p>(555) 123-4567</p>
+                            
+                            <p><strong>WhatsApp Support:</strong></p>
+                            <p>+91 98765 43210</p>
+                            
+                            <p><strong>Business Hours:</strong></p>
+                            <p>Monday - Friday: 9:00 AM - 6:00 PM IST<br>
+                               Saturday: 10:00 AM - 4:00 PM IST<br>
+                               Sunday: Closed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-geo-alt text-primary"></i> Office Address</h3>
+                            <address>
+                                <strong>Nail Studio Headquarters</strong><br>
+                                123 Beauty Street<br>
+                                Fashion District<br>
+                                Mumbai, Maharashtra 400001<br>
+                                India
+                            </address>
+                            
+                            <p><strong>Visiting Hours:</strong><br>
+                            Monday - Friday: 10:00 AM - 5:00 PM<br>
+                            <em>By appointment only</em></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-chat-dots text-primary"></i> Live Chat</h3>
+                            <p>Get instant support through our live chat feature available on our website.</p>
+                            
+                            <button class="btn btn-primary mb-3" onclick="openLiveChat()">
+                                <i class="bi bi-chat-dots"></i> Start Live Chat
+                            </button>
+                            
+                            <h4>Social Media</h4>
+                            <div class="d-flex gap-3">
+                                <a href="#" class="text-primary fs-4"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="text-primary fs-4"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="text-primary fs-4"><i class="bi bi-twitter"></i></a>
+                                <a href="#" class="text-primary fs-4"><i class="bi bi-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0"><i class="bi bi-envelope"></i> Send us a Message</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="contact-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Full Name *</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="subject" class="form-label">Subject *</label>
+                                        <select class="form-select" id="subject" name="subject" required>
+                                            <option value="">Select a subject</option>
+                                            <option value="order">Order Inquiry</option>
+                                            <option value="product">Product Question</option>
+                                            <option value="shipping">Shipping & Delivery</option>
+                                            <option value="return">Returns & Refunds</option>
+                                            <option value="technical">Technical Support</option>
+                                            <option value="business">Business Partnership</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="order-number" class="form-label">Order Number (if applicable)</label>
+                                    <input type="text" class="form-control" id="order-number" name="orderNumber">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message *</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Please provide as much detail as possible..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send"></i> Send Message
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0"><i class="bi bi-question-circle"></i> Frequently Asked Questions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="accordion" id="faqAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                            How long does shipping take?
+                                        </button>
+                                    </h2>
+                                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Standard shipping takes 5-7 business days, while express shipping takes 2-3 business days. Same-day delivery is available in select cities.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                            What is your return policy?
+                                        </button>
+                                    </h2>
+                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Items can be returned within 7 days of delivery in unused condition with original packaging. Custom items cannot be returned.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                            Do you offer custom nail designs?
+                                        </button>
+                                    </h2>
+                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Yes! We offer custom nail designs. Contact us with your requirements and we'll provide a quote and timeline.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openLiveChat() {
+    // Placeholder for live chat integration
+    showToast('Live chat will be available soon! Please use email or phone for now.', 'info');
+}
+
+document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Placeholder for form submission
+    showToast('Thank you for your message! We\'ll get back to you within 24 hours.', 'success');
+    this.reset();
+});
+</script>
