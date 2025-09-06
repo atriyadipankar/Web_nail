@@ -1,0 +1,96 @@
+<form id="loginForm" novalidate>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+        <div class="invalid-feedback"></div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+        <div class="invalid-feedback"></div>
+    </div>
+    
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="rememberMe">
+        <label class="form-check-label" for="rememberMe">Remember me</label>
+    </div>
+    
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+            Login
+        </button>
+    </div>
+    
+    <div class="text-center mt-3">
+        <p class="mb-0">Don't have an account? 
+            <a href="/auth/signup" class="auth-link">Sign up here</a>
+        </p>
+    </div>
+</form>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const form = e.target;
+    const btn = document.getElementById('loginBtn');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    // Clear previous validation
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // Show loading
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    
+    try {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showToast('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        } else {
+            if (result.errors) {
+                // Handle validation errors
+                result.errors.forEach(error => {
+                    const field = form.querySelector(`[name="${error.path || error.param}"]`);
+                    if (field) {
+                        field.classList.add('is-invalid');
+                        const feedback = field.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = error.msg || error.message;
+                        }
+                    }
+                });
+            } else {
+                showToast(result.message || 'Login failed', 'danger');
+            }
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+});
+</script>
+
+
+
+

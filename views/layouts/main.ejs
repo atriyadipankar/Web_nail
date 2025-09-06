@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Nail Studio</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --secondary-color: #f8bbd9;
+            --accent-color: #ff4081;
+            --dark-color: #2c2c2c;
+            --light-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .star-rating {
+            color: #ffc107;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-gem"></i> Nail Studio
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link <%= currentPath === '/' ? 'active' : '' %>" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= currentPath.startsWith('/products') ? 'active' : '' %>" href="/products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= currentPath.startsWith('/search') ? 'active' : '' %>" href="/search">Browse</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Form -->
+                <form class="d-flex me-3" action="/search" method="GET">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="q" placeholder="Search nails..." value="<%= query?.q || '' %>">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <ul class="navbar-nav">
+                    <!-- Cart -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="/cart">
+                            <i class="bi bi-bag"></i>
+                            <span class="cart-badge" id="cart-count" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    
+                    <% if (isAuthenticated) { %>
+                        <!-- User Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> <%= user.name %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/auth/profile">
+                                    <i class="bi bi-person"></i> Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="/orders">
+                                    <i class="bi bi-box"></i> My Orders
+                                </a></li>
+                                <% if (isAdmin) { %>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/admin">
+                                        <i class="bi bi-gear"></i> Admin Panel
+                                    </a></li>
+                                <% } %>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <!-- Auth Links -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/signup">Sign Up</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="bi bi-gem"></i> Nail Studio</h5>
+                    <p class="text-muted">Premium press-on nails for every style and occasion.</p>
+                </div>
+                <div class="col-md-2">
+                    <h6>Shop</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/products" class="text-muted text-decoration-none">All Products</a></li>
+                        <li><a href="/search?category=classic" class="text-muted text-decoration-none">Classic</a></li>
+                        <li><a href="/search?category=glitter" class="text-muted text-decoration-none">Glitter</a></li>
+                        <li><a href="/search?category=french" class="text-muted text-decoration-none">French</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6>Account</h6>
+                    <ul class="list-unstyled">
+                        <% if (isAuthenticated) { %>
+                            <li><a href="/auth/profile" class="text-muted text-decoration-none">My Profile</a></li>
+                            <li><a href="/orders" class="text-muted text-decoration-none">My Orders</a></li>
+                        <% } else { %>
+                            <li><a href="/auth/login" class="text-muted text-decoration-none">Login</a></li>
+                            <li><a href="/auth/signup" class="text-muted text-decoration-none">Sign Up</a></li>
+                        <% } %>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Contact</h6>
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-envelope"></i> support@nailstudio.com
+                    </p>
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-phone"></i> (555) 123-4567
+                    </p>
+                    <div class="mt-2">
+                        <a href="#" class="text-muted me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-muted me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-muted me-2"><i class="bi bi-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">&copy; 2023 Nail Studio. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        <a href="#" class="text-muted text-decoration-none">Privacy Policy</a> | 
+                        <a href="#" class="text-muted text-decoration-none">Terms of Service</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Cart Management -->
+    <script>
+        // Cart functionality
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartBadge = document.getElementById('cart-count');
+            if (count > 0) {
+                cartBadge.textContent = count;
+                cartBadge.style.display = 'flex';
+            } else {
+                cartBadge.style.display = 'none';
+            }
+        }
+        
+        function addToCart(productId, title, price, image, variant, quantity = 1) {
+            const existingItemIndex = cart.findIndex(item => 
+                item.productId === productId && 
+                item.variant.size === variant.size && 
+                item.variant.design === variant.design
+            );
+            
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity += quantity;
+            } else {
+                cart.push({
+                    productId,
+                    title,
+                    price,
+                    image,
+                    variant,
+                    quantity
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showToast('Item added to cart!', 'success');
+        }
+        
+        function removeFromCart(productId, variant) {
+            cart = cart.filter(item => 
+                !(item.productId === productId && 
+                  item.variant.size === variant.size && 
+                  item.variant.design === variant.design)
+            );
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+        }
+        
+        function updateCartItemQuantity(productId, variant, quantity) {
+            const itemIndex = cart.findIndex(item => 
+                item.productId === productId && 
+                item.variant.size === variant.size && 
+                item.variant.design === variant.design
+            );
+            
+            if (itemIndex > -1) {
+                if (quantity <= 0) {
+                    cart.splice(itemIndex, 1);
+                } else {
+                    cart[itemIndex].quantity = quantity;
+                }
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+            }
+        }
+        
+        function clearCart() {
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+        }
+        
+        function getCart() {
+            return cart;
+        }
+        
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+        
+        // Logout function
+        async function logout() {
+            try {
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    showToast('Logout failed', 'error');
+                }
+            } catch (error) {
+                showToast('Logout failed', 'error');
+            }
+        }
+        
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
+    
+    <!-- Page-specific scripts -->
+    <% if (typeof pageScript !== 'undefined') { %>
+        <%- pageScript %>
+    <% } %>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,384 @@
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle display-1 text-primary"></i>
+                    </div>
+                    <h5 class="card-title"><%= user.name %></h5>
+                    <p class="text-muted"><%= user.email %></p>
+                    <span class="badge bg-<%= user.role === 'admin' ? 'danger' : 'primary' %>">
+                        <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="list-group mt-3">
+                <a href="#profile-info" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+                    <i class="bi bi-person me-2"></i> Profile Information
+                </a>
+                <a href="#change-password" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="bi bi-lock me-2"></i> Change Password
+                </a>
+                <a href="#order-history" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="bi bi-box me-2"></i> Order History
+                </a>
+            </div>
+        </div>
+        
+        <!-- Profile Content -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Profile Information -->
+                <div class="tab-pane fade show active" id="profile-info">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-person me-2"></i> Profile Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               value="<%= user.name %>" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" 
+                                               value="<%= user.email %>" disabled>
+                                        <div class="form-text">Email cannot be changed</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" 
+                                               value="<%= user.phone || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-4 mb-3">Address Information</h6>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label for="street" class="form-label">Street Address</label>
+                                        <input type="text" class="form-control" id="street" name="address[street]" 
+                                               value="<%= user.address?.street || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="city" class="form-label">City</label>
+                                        <input type="text" class="form-control" id="city" name="address[city]" 
+                                               value="<%= user.address?.city || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="state" class="form-label">State</label>
+                                        <input type="text" class="form-control" id="state" name="address[state]" 
+                                               value="<%= user.address?.state || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="postalCode" class="form-label">Postal Code</label>
+                                        <input type="text" class="form-control" id="postalCode" name="address[postalCode]" 
+                                               value="<%= user.address?.postalCode || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="country" class="form-label">Country</label>
+                                        <input type="text" class="form-control" id="country" name="address[country]" 
+                                               value="<%= user.address?.country || '' %>">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" id="updateProfileBtn">
+                                    <span class="spinner-border spinner-border-sm d-none me-2"></span>
+                                    Update Profile
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Change Password -->
+                <div class="tab-pane fade" id="change-password">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-lock me-2"></i> Change Password
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="passwordForm">
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword" 
+                                           name="currentPassword" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" 
+                                           name="newPassword" required>
+                                    <div class="form-text">Password must be at least 6 characters long.</div>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmNewPassword" 
+                                           name="confirmPassword" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" id="changePasswordBtn">
+                                    <span class="spinner-border spinner-border-sm d-none me-2"></span>
+                                    Change Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order History -->
+                <div class="tab-pane fade" id="order-history">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-box me-2"></i> Recent Orders
+                            </h5>
+                            <a href="/orders" class="btn btn-outline-primary btn-sm">View All Orders</a>
+                        </div>
+                        <div class="card-body">
+                            <% if (orders && orders.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Order #</th>
+                                                <th>Date</th>
+                                                <th>Items</th>
+                                                <th>Total</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% orders.forEach(order => { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>#<%= order.orderNumber %></strong>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.createdAt.toLocaleDateString() %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.items.length %> item<%= order.items.length > 1 ? 's' : '' %>
+                                                    </td>
+                                                    <td>
+                                                        <strong>$<%= order.total.toFixed(2) %></strong>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-<%= 
+                                                            order.status === 'delivered' ? 'success' : 
+                                                            order.status === 'shipped' ? 'info' :
+                                                            order.status === 'processing' ? 'warning' :
+                                                            order.status === 'cancelled' ? 'danger' : 'secondary'
+                                                        %>">
+                                                            <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/orders/<%= order._id %>" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-box display-4 text-muted"></i>
+                                    <h6 class="text-muted mt-3">No orders yet</h6>
+                                    <p class="text-muted">Start shopping to see your orders here!</p>
+                                    <a href="/products" class="btn btn-primary">
+                                        <i class="bi bi-bag"></i> Shop Now
+                                    </a>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Profile form submission
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const form = e.target;
+    const btn = document.getElementById('updateProfileBtn');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    // Clear previous validation
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    
+    try {
+        const formData = new FormData(form);
+        const data = {};
+        
+        // Handle nested address object
+        for (const [key, value] of formData.entries()) {
+            if (key.startsWith('address[')) {
+                const addressKey = key.slice(8, -1); // Remove 'address[' and ']'
+                if (!data.address) data.address = {};
+                data.address[addressKey] = value;
+            } else {
+                data[key] = value;
+            }
+        }
+        
+        const response = await fetch('/auth/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showToast('Profile updated successfully!', 'success');
+        } else {
+            if (result.errors) {
+                result.errors.forEach(error => {
+                    const field = form.querySelector(`[name="${error.path || error.param}"]`);
+                    if (field) {
+                        field.classList.add('is-invalid');
+                        const feedback = field.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = error.msg || error.message;
+                        }
+                    }
+                });
+            } else {
+                showToast(result.message || 'Update failed', 'danger');
+            }
+        }
+    } catch (error) {
+        console.error('Profile update error:', error);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+});
+
+// Password form submission
+document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const form = e.target;
+    const btn = document.getElementById('changePasswordBtn');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    // Clear previous validation
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // Client-side validation
+    const newPassword = form.newPassword.value;
+    const confirmPassword = form.confirmPassword.value;
+    
+    if (newPassword !== confirmPassword) {
+        const confirmField = form.confirmPassword;
+        confirmField.classList.add('is-invalid');
+        confirmField.nextElementSibling.textContent = 'Passwords do not match';
+        return;
+    }
+    
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    
+    try {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        
+        const response = await fetch('/auth/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showToast('Password changed successfully!', 'success');
+            form.reset();
+        } else {
+            if (result.errors) {
+                result.errors.forEach(error => {
+                    const field = form.querySelector(`[name="${error.path || error.param}"]`);
+                    if (field) {
+                        field.classList.add('is-invalid');
+                        const feedback = field.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = error.msg || error.message;
+                        }
+                    }
+                });
+            } else {
+                showToast(result.message || 'Password change failed', 'danger');
+            }
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+});
+
+// Real-time password confirmation validation
+document.getElementById('confirmNewPassword').addEventListener('input', function() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = this.value;
+    
+    if (confirmPassword && newPassword !== confirmPassword) {
+        this.classList.add('is-invalid');
+        this.nextElementSibling.textContent = 'Passwords do not match';
+    } else {
+        this.classList.remove('is-invalid');
+    }
+});
+</script>
+
+
+
+

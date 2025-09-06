@@ -1,0 +1,221 @@
+<!-- Hero Section -->
+<section class="hero bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Premium Press-On Nails</h1>
+                <p class="lead mb-4">Discover our stunning collection of handcrafted press-on nails. From classic elegance to bold statement pieces, find your perfect style.</p>
+                <div class="d-flex gap-3">
+                    <a href="/products" class="btn btn-light btn-lg">
+                        <i class="bi bi-bag"></i> Shop Now
+                    </a>
+                    <a href="/search" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-search"></i> Browse Collection
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=500&h=400&fit=crop" 
+                     alt="Beautiful nails" class="img-fluid rounded shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-gem display-4 text-primary"></i>
+                </div>
+                <h5>Premium Quality</h5>
+                <p class="text-muted">Made with high-quality materials for long-lasting wear and stunning appearance.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-palette display-4 text-primary"></i>
+                </div>
+                <h5>Custom Designs</h5>
+                <p class="text-muted">Unique designs created by professional nail artists for every style and occasion.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-truck display-4 text-primary"></i>
+                </div>
+                <h5>Fast Shipping</h5>
+                <p class="text-muted">Free shipping on orders over $50. Get your nails delivered quickly and safely.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold mb-3">Featured Products</h2>
+                <p class="lead text-muted">Our most popular and trending nail designs</p>
+            </div>
+        </div>
+        
+        <% if (products && products.length > 0) { %>
+            <div class="row g-4">
+                <% products.forEach(product => { %>
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <% if (product.images && product.images.length > 0) { %>
+                                <% const primaryImage = product.images.find(img => img.isPrimary) || product.images[0] %>
+                                <img src="<%= primaryImage.url %>" 
+                                     alt="<%= product.title %>" 
+                                     class="card-img-top product-image">
+                            <% } else { %>
+                                <div class="card-img-top product-image bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            <% } %>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title mb-2"><%= product.title %></h6>
+                                <p class="card-text text-muted small mb-2"><%= product.description.substring(0, 80) %>...</p>
+                                
+                                <!-- Rating -->
+                                <div class="mb-2">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="bi bi-star<%= i <= product.rating.average ? '-fill' : '' %> star-rating"></i>
+                                    <% } %>
+                                    <span class="text-muted small">(<%= product.rating.count %>)</span>
+                                </div>
+                                
+                                <!-- Colors -->
+                                <div class="mb-2">
+                                    <small class="text-muted">Colors: </small>
+                                    <% product.colors.slice(0, 3).forEach(color => { %>
+                                        <span class="badge bg-secondary me-1"><%= color %></span>
+                                    <% }) %>
+                                    <% if (product.colors.length > 3) { %>
+                                        <span class="text-muted small">+<%= product.colors.length - 3 %> more</span>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="h6 text-primary mb-0">$<%= product.price.toFixed(2) %></span>
+                                        <% if (product.totalStock > 0) { %>
+                                            <small class="text-success d-block">In Stock</small>
+                                        <% } else { %>
+                                            <small class="text-danger d-block">Out of Stock</small>
+                                        <% } %>
+                                    </div>
+                                    <a href="/products/<%= product._id %>" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="/products" class="btn btn-primary btn-lg">
+                    <i class="bi bi-grid"></i> View All Products
+                </a>
+            </div>
+        <% } else { %>
+            <div class="text-center py-5">
+                <i class="bi bi-box display-1 text-muted"></i>
+                <h4 class="text-muted mt-3">No products available</h4>
+                <p class="text-muted">Check back soon for our amazing nail collections!</p>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold mb-3">Shop by Category</h2>
+                <p class="lead text-muted">Find the perfect style for any occasion</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <a href="/search?category=classic" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-heart display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Classic</h5>
+                            <p class="card-text text-muted">Timeless elegance for everyday wear</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <a href="/search?category=french" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-star display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">French</h5>
+                            <p class="card-text text-muted">Sophisticated French manicure styles</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <a href="/search?category=glitter" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-lightning display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Glitter</h5>
+                            <p class="card-text text-muted">Sparkle and shine for special occasions</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <a href="/search?category=chrome" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-circle display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Chrome</h5>
+                            <p class="card-text text-muted">Modern metallic finishes</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h3 class="mb-3">Stay Updated</h3>
+                <p class="mb-0">Subscribe to get notified about new collections and exclusive offers.</p>
+            </div>
+            <div class="col-lg-6">
+                <form class="d-flex gap-2">
+                    <input type="email" class="form-control" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-light">
+                        <i class="bi bi-envelope"></i> Subscribe
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
