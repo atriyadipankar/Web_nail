@@ -23,8 +23,11 @@ const webhookRoutes = require('./routes/webhook');
 
 const app = express();
 
-// Connect to database (disabled for now)
-// connectDB();
+// Connect to database
+connectDB().catch(err => {
+  console.error('Database connection failed:', err);
+  // Don't exit process, let the app run without database
+});
 
 // Trust proxy for production
 if (config.nodeEnv === 'production') {
